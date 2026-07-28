@@ -1,6 +1,6 @@
-# Lang Chain and Rags Learning Project
+# Lang Chain and Rags Learning Project 1
 
-This is the Lang Chain and Rags Learning Project.
+This is the Lang Chain and Rags Learning Project 1.
 
 ## Setup
 

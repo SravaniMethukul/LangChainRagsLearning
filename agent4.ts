@@ -1,6 +1,7 @@
 import { createAgent, initChatModel, tool } from "langchain";
 import "dotenv/config";
 import z from "zod";
+import { MemorySaver } from "@langchain/langgraph";
 
 const systemPrompt = `You are expert weather forcaster who also speaks in humour way.
 You have access to a tool called get_user_location which can retrieve the location of the user based on their userId.
@@ -32,10 +33,12 @@ const getWeather = tool((input) => {
 );
 
 const config = {
+    configurable: { thread_id: "1" },
     context: { user_id: "1" }
 }
 
 const qaconfig = {
+    configurable: { thread_id: "2" },
     context: { user_id: "3" }
 }
 
@@ -53,11 +56,14 @@ const model = await initChatModel(
 }
 )
 
+const checkpointer = new MemorySaver();
+
 const agent = createAgent({
     model: model,
     tools: [getUserLocation, getWeather],
     systemPrompt,
-    responseFormat
+    responseFormat,
+    checkpointer
 });
 
 
@@ -65,5 +71,26 @@ const response = await agent.invoke({
     messages: [{ role: "user", content: "what is weather outside" }]
 }, config);
 
-console.log(response);
-console.log(response.structuredResponse);
+const longMessage = response.messages[response.messages.length - 1].content
+console.log(longMessage);
+
+const response2 = await agent.invoke({
+    messages: [{ role: "user", content: "what is location did you tell me about?" }]
+}, config);
+
+const longMessage2 = response2.messages[response2.messages.length - 1].content
+console.log(longMessage2);
+
+const response3 = await agent.invoke({
+    messages: [{ role: "user", content: "suggest me good places to have food in that location?" }]
+}, config);
+
+const longMessage3 = response3.messages[response3.messages.length - 1].content
+console.log(longMessage3);
+
+const response4 = await agent.invoke({
+    messages: [{ role: "user", content: "what is weather of the location" }]
+}, qaconfig);
+
+const longMessage4 = response4.messages[response4.messages.length - 1].content
+console.log(longMessage4);
