@@ -1,3 +1,5 @@
+//middleware concept
+
 import { createAgent, createMiddleware, initChatModel, tool } from "langchain";
 import "dotenv/config";
 import z from "zod";

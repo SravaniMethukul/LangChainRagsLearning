@@ -1,3 +1,6 @@
+//defining Response Format and its usage
+
+
 import { createAgent, initChatModel, tool } from "langchain";
 import "dotenv/config";
 import z from "zod";
