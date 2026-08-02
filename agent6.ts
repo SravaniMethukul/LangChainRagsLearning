@@ -1,8 +1,8 @@
-//Fallback model, summarization in Middleware
+//Fallback model, summarization, llmToolSelector in Middleware
 
 import "dotenv/config";
 import z from "zod";
-import { createAgent, modelFallbackMiddleware, tool } from "langchain";
+import { createAgent, llmToolSelectorMiddleware, modelFallbackMiddleware, summarizationMiddleware, tool } from "langchain";
 
 
 const searchtool = tool(({ query }: any) => {
@@ -39,16 +39,33 @@ const weatherTool = tool(({ location }) => {
         })
     })
 
-
+// if 10000 is max token, 8000 is used
 const agent = createAgent({
     model: "claude-sonnet-4-6",
     tools: [searchtool, emailTool, weatherTool],
     middleware: [
-        modelFallbackMiddleware("claude-haiku-4-5", "claude-opus-4-5")
+        //modelFallbackMiddleware("Gemini 3.1 Pro", "claude-opus-4-5"),
+        modelFallbackMiddleware("claude-sonnet-4-6"),
+        summarizationMiddleware({
+            model: "claude-sonnet-4-6",
+            maxTokensBeforeSummary: 8000, //Trigger summarization of 8000 tokens,
+            messagesToKeep: 20 //keep last 20 messages
+        }),
+        //50 tools - basic model - 3 to 4 tools - main model(reasoning)->output
+        llmToolSelectorMiddleware({
+            //model: "Gemini 3.1 Pro",
+            model: "claude-sonnet-4-6",
+            maxTools: 2
+        })
     ]
 })
 
 const res = await agent.invoke({
-    messages: [{ role: "user", content: "what is machine learning?" }]
+    messages: [{ role: "user", content: "what is weather in tokyo?" }]
 });
 console.log("Response 1:", res.messages[res.messages.length - 1].content);
+
+const res2 = await agent.invoke({
+    messages: [{ role: "user", content: "what is weather in tokyo? and email me the result with subject weather in tokyo to sravanisravs1410@gmail.com" }]
+});
+console.log("Response 2:", res2.messages[res2.messages.length - 1].content);
