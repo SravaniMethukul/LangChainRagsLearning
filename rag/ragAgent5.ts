@@ -4,7 +4,6 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { OpenAIEmbeddings } from "@langchain/openai"
 import { MemoryVectorStore } from "@langchain/classic/vectorstores/memory";
-import "dotenv/config";
 import { createAgent, tool } from "langchain";
 import { z } from "zod";
 
@@ -63,10 +62,11 @@ const mcpTools = await mcpClient.getTools();
 
 const agent = createAgent({
     model: "claude-sonnet-4-6",
-    tools: [...mcpTools, retrieve],
-})
+    tools: [retrieve, ...mcpTools],
+});
+
 
 const result = await agent.invoke({
-    messages: [{ role: "user", content: "Get results of product with id 1" }]
+    messages: [{ role: "user", content: "Get results of product with id 1 and check if that product name match with company offerings" }]
 })
 console.log(result.messages[result.messages.length - 1].content);
